@@ -1,5 +1,8 @@
 # Mote's Ocean Technology Club 
 
+<img src="https://github.com/MoteMarine/Ocean-Technology-Club/blob/master/docs/sensorsdiagram.jpg" alt="Scheme" width="400" height="400">
+
+### About Us
 a new program that will allow Sarasota and Manatee-county high schoolers and
 teachers to learn and apply science and technology skills through the mentorship
 of marine researchers at Mote.

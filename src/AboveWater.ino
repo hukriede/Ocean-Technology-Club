@@ -4,25 +4,22 @@
 #include <RTClib.h>
 #include <RTC_DS3234.h>
 
-// Avoid spurious warnings according to RTC library (DO NOT REMOVE)
 #undef PROGMEM
 #define PROGMEM __attribute__(( section(".progmem.data") ))
 #undef PSTR
 #define PSTR(s) (__extension__(oooooo{static prog_char __c[] PROGMEM = (s); &__c[0];}))
-
-SoftwareSerial mySerial = SoftwareSerial(2, 3);
-RTC_DS3234 RTC(8);
-
 #define SDchipSelect (10)
 #define RTCchipSelect (8)
 #define codeVersion ("0.0.1,")
+
+SoftwareSerial mySerial = SoftwareSerial(2, 3);
+RTC_DS3234 RTC(8);
 
 String configVariables;
 String dataString;
 String fileName;
 int numReadings;
 String under;
-
 
 void setup() {
   Serial.begin(115200);
@@ -34,7 +31,6 @@ void setup() {
   pinMode(RTCchipSelect, OUTPUT);
   pinMode(SDchipSelect, OUTPUT);
 
-  // see if the card is present and can be initialized:
   while (!SD.begin(SDchipSelect)) {
     Serial.println("Card failed, or not present");
   }
@@ -61,10 +57,8 @@ void setup() {
 
 void loop() {
   char indicator = (char)Serial.read();
-  // the letter 'd' is sent on purpose by the ESP8266, when the device wants the data
   if (indicator == 'd') {
     Serial.flush();
-    // 't' indicator char that tells the SoftwareSerial for the underwater sensor to turn on
     mySerial.print('t');
     mySerial.print(numReadings);
     mySerial.print('z');
@@ -107,7 +101,6 @@ void loop() {
     Serial.print(configVariables);
     Serial.print(codeVersion);
     Serial.print(dataString);
-    // send a specific stop char
     Serial.print('z');
   }
 }
@@ -124,4 +117,3 @@ String getDateAndTime() {
   String datetime = now.toString(buf, len);
   return datetime;
 }
-

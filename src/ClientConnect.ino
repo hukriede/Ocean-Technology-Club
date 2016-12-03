@@ -11,33 +11,25 @@ WiFiClient client;
 const uint16_t port = 4001;
 const char * host = "clouddev.mote.org";
 
-void getData(String*);
-String getJSON();
-void setDelayTime();
-void sendToClient(String);
-boolean connectToHost();
-
-
 void setup() {
   Serial.begin(115200);
   mySerial.begin(115200);
   delay(10);
 
   WiFiMulti.addAP("Verizon-791L-00CC", "78d8b2d1");
-  Serial.print("Wait for WiFi.");
-
+  Serial.print("Connecting.");
   while (WiFiMulti.run() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
-  Serial.println("WiFi connected");
+  Serial.println("WiFi Connected");
   delay(500);
 }
 
 void loop() {
   if (connectToHost()) {
     sendToClient("Sending JSON data to host");
-    sendToClient(getJSON());
+    sendToClient(buildJSON());
     sendToClient("seconds until next cycle...");
     sendToClient((String)(delayTime / 1000));
     sendToClient("Closing connection");
@@ -47,7 +39,13 @@ void loop() {
 }
 
 
-void getData(String* data) {
+/*
+  askForData()
+
+  Asks the AboveWater Arduino for an entry of data and parses it into an array
+  constucts an array consumable by the JSON builder
+*/
+void askForData(String* data) {
   String s;
   mySerial.print('d');
   for (int i = 0; i < 3; i++) {
@@ -86,9 +84,16 @@ void getData(String* data) {
   }
 }
 
-String getJSON () {
+/*
+ buildJSON()
+
+ Collects data from the AboveWater Arduino, constucts a JSON object with the
+ gathered data, and sends the data, using the predefined wireless connection, to
+ client.
+*/
+String buildJSON () {
   String data[10];
-  getData(data);
+  askForData(data);
   StaticJsonBuffer<375> jsonBuffer;
 
   JsonObject& root = jsonBuffer.createObject();
@@ -104,7 +109,6 @@ String getJSON () {
   systems["CodeVersion"] = data[6];
   systems["Date"] = data[7];
   systems["Time"] = data[8];
-
   sensors["Water_Temperature"] = data[9].toFloat();
 
   delayTime = data[5].toFloat();
@@ -129,10 +133,20 @@ String getJSON () {
   return json;
 }
 
+/*
+setDelayTime()
+
+Modifies the amount of time that is waited between each message sent
+*/
 void setDelayTime() {
   delayTime = delayTime * 60 * 1000;
 }
 
+/*
+sendToClient()
+
+Prints the message to the screen, sends it to the client, and waits for a response.
+*/
 void sendToClient(String data) {
   Serial.println(data);
   client.print(data);
@@ -141,6 +155,12 @@ void sendToClient(String data) {
   delay(10);
 }
 
+/*
+ connectToHost()
+
+ Until the chip has connected to the defined host loop repeatedly waiting
+ five seconds between each connection attempt
+*/
 boolean connectToHost() {
   while (!client.connect(host, port)) {
     delay(5000);

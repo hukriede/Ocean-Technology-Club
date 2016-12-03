@@ -16,14 +16,12 @@ void setup() {
 }
 
 /*
-
   loop()
 
   The BelowWater Arduino continuously waits for serial input from the AboveWater
   Arduino. If it sees the character 't' it looks for an integer between that 't'
   and the following 'z' ('t5z'). It takes the average of that number of readings
   and sends it back to the AboveWater Arduino.
-
 */
 void loop() {
   char indicator = (char)Serial.read();
@@ -40,12 +38,10 @@ void loop() {
 }
 
 /*
-
   readTemperature()
 
-  This function wakes up the temperature sensor, waits for it to settle down, and 
+  This function wakes up the temperature sensor, waits for it to settle down, and
   then takes and returns a measured temperature value in degrees Celcius.
-
 */
 double readTemperature() {
   temperatureSensor.shutdown_wake(0);
@@ -57,16 +53,14 @@ double readTemperature() {
 }
 
 /*
-
   averageValues()
 
-  For a predetermined number of readings( int numberOfReadings) we collect a 
-  reading from the MCP9809 sensor using the readTemperature function and add 
+  For a predetermined number of readings( int numberOfReadings) we collect a
+  reading from the MCP9809 sensor using the readTemperature function and add
   it to the current sum.
 
   The average value is returned as the collected sum divided by the number of
   readings that were not 0.
-
 */
 double averageValues(int numberOfReadings){
   int count = 0;

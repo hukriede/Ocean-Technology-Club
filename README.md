@@ -2,7 +2,7 @@
 
 ![banner](./docs/images/MoteOT.png)
 
-> Ocean technology club where Sarasota county high schoolers learn and apply science and technology skills through the mentorship of marine researchers at Mote.
+> Ocean technology club is where Sarasota county high schoolers learn and apply science and technology skills through the mentorship of marine researchers at Mote.
 
 ## Table of Contents
 

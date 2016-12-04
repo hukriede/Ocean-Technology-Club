@@ -7,11 +7,10 @@ void setup() {
   Serial.begin(9600);
   pinMode(13, OUTPUT);
   pinMode(10, OUTPUT);
-  digitalWrite(10, LOW);
+  ledOff();
 
-  if (!temperatureSensor.begin()) {
+  while (!temperatureSensor.begin()) {
     Serial.println("Couldn't find MCP9808!");
-    while (1);
   }
 }
 
@@ -22,27 +21,42 @@ void setup() {
   Arduino. If it sees the character 't' it looks for an integer between that 't'
   and the following 'z' ('t5z'). It takes the average of that number of readings
   and sends it back to the AboveWater Arduino.
+
+  If the numberOfReadings value is less than 1 it's assigned to 1 to prevent
+  Nan results.
 */
 void loop() {
-  char indicator = (char)Serial.read();
-  if (indicator == 't') {
+  if ((char)Serial.read() == 't') {
     int numberOfReadings = (Serial.readStringUntil('z')).toInt();
-    digitalWrite(10, LOW);
-    double temperatureReading = averageValues(numberOfReadings);
-    delay(15);
-    digitalWrite(10, HIGH);
-    Serial.print(temperatureReading);
-    Serial.print((char)00);
-    digitalWrite(10, LOW);
+    double temperatureReading = averageValues(numberOfReadings <= 0 ? 1 : numberOfReadings );
+    reportMeasuredTemperature(temperatureReading);
   }
 }
 
 /*
-  readTemperature()
+  averageValues()
 
-  This function wakes up the temperature sensor, waits for it to settle down, and
-  then takes and returns a measured temperature value in degrees Celcius.
+  For a predetermined number of readings(int numberOfReadings) we collect a
+  measurement from the MCP9809 sensor using the readTemperature function and add
+  it to the current sum.
+
+  The average value is returned as the collected sum divided by the number of
+  readings.
 */
+double averageValues(int numberOfReadings){
+  ledOff();
+  double sum = 0;
+  for(int i = 0; i < numberOfReadings; i++){
+    double reading = readTemperature();
+    sum = (sum + reading);
+    i = reading == 0.00 ? i-- : i;
+  }
+  double average = sum / numberOfReadings;
+  delay(15);
+  ledOn();
+  return average;
+}
+
 double readTemperature() {
   temperatureSensor.shutdown_wake(0);
   delay(100);
@@ -52,29 +66,16 @@ double readTemperature() {
   return temperature;
 }
 
-/*
-  averageValues()
+void reportMeasuredTemperature(double temperature){
+    Serial.print(temperature);
+    Serial.print((char)00);
+    ledOff();
+}
 
-  For a predetermined number of readings( int numberOfReadings) we collect a
-  reading from the MCP9809 sensor using the readTemperature function and add
-  it to the current sum.
+void ledOn() {
+    digitalWrite(10, HIGH);
+}
 
-  The average value is returned as the collected sum divided by the number of
-  readings that were not 0.
-*/
-double averageValues(int numberOfReadings){
-  int count = 0;
-  double sum = 0;
-  for(int i = 0; i < numberOfReadings; i++){
-    double reading = readTemperature();
-    if (reading == 0.00){
-      if (numberOfReadings > (count + 1)){
-        count++;
-      }
-    }
-    sum = (sum + reading);
-  }
-  numberOfReadings -= count;
-  double average = sum / numberOfReadings;
-  return average;
+void ledOff() {
+    digitalWrite(10, LOW);
 }

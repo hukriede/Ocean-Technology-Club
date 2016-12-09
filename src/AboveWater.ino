@@ -15,6 +15,8 @@
 SoftwareSerial mySerial = SoftwareSerial(2, 3);
 RTC_DS3234 RTC(8);
 
+const int len = 32;
+static char buf[len];
 String configVariables;
 String dataString;
 String fileName;
@@ -34,11 +36,77 @@ void setup() {
   while (!SD.begin(SDchipSelect)) {
     Serial.println("Card failed, or not present");
   }
-
   if (!RTC.isrunning()) {
     RTC.adjust(DateTime(__DATE__, __TIME__));
   }
+  setConfigVariables();
+}
 
+void loop() {
+  if ((char)Serial.read() == 'd') {
+    askForTemperature();
+    watchForTemperatureResults();
+    createDataString();
+    sendDataToClient();
+  }
+}
+
+void sendDataToClient(){
+    Serial.print(configVariables);
+    Serial.print(codeVersion);
+    Serial.print(dataString);
+    Serial.print('z');
+}
+
+void writeDataToDisk(){
+    File dataFile = SD.open(fileName, FILE_WRITE);
+    if (dataFile) {
+      dataFile.println(dataString);
+      dataFile.close();
+    }
+    else {
+      Serial.print("error opening ");
+      Serial.println(fileName);
+    }
+}
+
+void createDataString(){
+    String dt = getDateAndTime();
+    String d = dt.substring(0, 11);
+    String t = dt.substring(12);
+    dataString = d + "," + t + "," + under + ",";
+}
+
+void watchForTemperatureResults(){
+  for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 200; i++) {
+      under = mySerial.readStringUntil((char)00);
+      if (under.length() > 0) {
+        break;
+      }
+    }
+    if (under.length() > 0) {
+      break;
+    }
+    else {
+      Serial.println("Didn't receive temp, trying again");
+      mySerial.print('t');
+    }
+  }
+  if (under.length() < 1) {
+    Serial.println("Error: did not receive temperature. Check sensor.");
+  }
+}
+
+void askForTemperature(){
+    Serial.flush();
+    mySerial.print('t');
+    mySerial.print(numReadings);
+    mySerial.print('z');
+    delay(500);
+}
+
+void setConfigVariables(){
   File myFile = SD.open("_config.txt");
   if (myFile) {
     while (myFile.available()) {
@@ -51,62 +119,7 @@ void setup() {
   } else {
     Serial.println("error opening _config.txt");
   }
-  myFile.close();
 }
-
-
-void loop() {
-  char indicator = (char)Serial.read();
-  if (indicator == 'd') {
-    Serial.flush();
-    mySerial.print('t');
-    mySerial.print(numReadings);
-    mySerial.print('z');
-    delay(500);
-    for (int i = 0; i < 3; i++) {
-      for (int i = 0; i < 200; i++) {
-        under = mySerial.readStringUntil((char)00);
-        if (under.length() > 0) {
-          break;
-        }
-      }
-      if (under.length() > 0) {
-        break;
-      }
-      else {
-        Serial.println("Didn't receive temp, trying again");
-        mySerial.print('t');
-      }
-    }
-    if (under.length() < 1) {
-      Serial.println("Error: did not receive temperature. Check sensor.");
-    }
-
-    String dt = getDateAndTime();
-    String d = dt.substring(0, 11);
-    String t = dt.substring(12);
-
-    dataString = d + "," + t + "," + under + ",";
-
-    File dataFile = SD.open(fileName, FILE_WRITE);
-    if (dataFile) {
-      dataFile.println(dataString);
-      dataFile.close();
-    }
-    else {
-      Serial.print("error opening ");
-      Serial.println(fileName);
-    }
-
-    Serial.print(configVariables);
-    Serial.print(codeVersion);
-    Serial.print(dataString);
-    Serial.print('z');
-  }
-}
-
-const int len = 32;
-static char buf[len];
 
 String getDateAndTime() {
   DateTime now = RTC.now();

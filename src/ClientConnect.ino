@@ -6,7 +6,6 @@
 ESP8266WiFiMulti WiFiMulti;
 SoftwareSerial mySerial(12, 14);
 double delayTime = 0;
-
 WiFiClient client;
 const uint16_t port = 4001;
 const char * host = "clouddev.mote.org";
@@ -28,20 +27,16 @@ void setup() {
 
 void loop() {
   if (connectToHost()) {
-    sendToClient("Sending JSON data to host");
-    sendToClient(buildJSON());
-    sendToClient("seconds until next cycle...");
-    sendToClient((String)(delayTime / 1000));
-    sendToClient("Closing connection");
+    String data[10];
+    askForData(data);
+    String json = buildJSON(data);
+    sendToClient(json);
     client.stop();
     delay(delayTime);
   }
 }
 
-
 /*
-  askForData()
-
   Asks the AboveWater Arduino for an entry of data and parses it into an array
   constucts an array consumable by the JSON builder
 */
@@ -85,22 +80,16 @@ void askForData(String* data) {
 }
 
 /*
- buildJSON()
-
  Collects data from the AboveWater Arduino, constucts a JSON object with the
  gathered data, and sends the data, using the predefined wireless connection, to
  client.
 */
-String buildJSON () {
-  String data[10];
-  askForData(data);
+String buildJSON (String* data) {
   StaticJsonBuffer<375> jsonBuffer;
-
   JsonObject& root = jsonBuffer.createObject();
   JsonObject& systems = jsonBuffer.createObject();
   JsonObject& sensors = jsonBuffer.createObject();
   JsonObject& gps = jsonBuffer.createObject();
-
   systems["ModelNumber"] = data[0].toInt();
   systems["SerialNumber"] = data[1].toInt();
   systems["Location"] = data[2];
@@ -133,20 +122,10 @@ String buildJSON () {
   return json;
 }
 
-/*
-setDelayTime()
-
-Modifies the amount of time that is waited between each message sent
-*/
 void setDelayTime() {
   delayTime = delayTime * 60 * 1000;
 }
 
-/*
-sendToClient()
-
-Prints the message to the screen, sends it to the client, and waits for a response.
-*/
 void sendToClient(String data) {
   Serial.println(data);
   client.print(data);
@@ -156,8 +135,6 @@ void sendToClient(String data) {
 }
 
 /*
- connectToHost()
-
  Until the chip has connected to the defined host loop repeatedly waiting
  five seconds between each connection attempt
 */

@@ -1,31 +1,22 @@
 #include <SoftwareSerial.h>
+#include <RTC_DS3234.h>
 #include <SPI.h>
 #include <SD.h>
-#include <RTClib.h>
-#include <RTC_DS3234.h>
 
-#undef PROGMEM
-#define PROGMEM __attribute__(( section(".progmem.data") ))
-#undef PSTR
-#define PSTR(s) (__extension__(oooooo{static prog_char __c[] PROGMEM = (s); &__c[0];}))
 #define SDchipSelect (10)
 #define RTCchipSelect (8)
-#define codeVersion ("0.0.1,")
 
-SoftwareSerial mySerial = SoftwareSerial(2, 3);
+SoftwareSerial BelowWaterSerial = SoftwareSerial(2, 3);
 RTC_DS3234 RTC(8);
 
-const int len = 32;
-static char buf[len];
 String configVariables;
 String dataString;
 String fileName;
 int numReadings;
-String under;
 
 void setup() {
   Serial.begin(115200);
-  mySerial.begin(9600);
+  BelowWaterSerial.begin(9600);
 
   SPI.begin();
   RTC.begin();
@@ -45,15 +36,14 @@ void setup() {
 void loop() {
   if ((char)Serial.read() == 'd') {
     askForTemperature();
-    watchForTemperatureResults();
-    createDataString();
+    String temperature = watchForTemperatureResults();
+    createDataString(temperature);
     sendDataToClient();
   }
 }
 
 void sendDataToClient(){
     Serial.print(configVariables);
-    Serial.print(codeVersion);
     Serial.print(dataString);
     Serial.print('z');
 }
@@ -70,39 +60,26 @@ void writeDataToDisk(){
     }
 }
 
-void createDataString(){
+void createDataString(String data){
     String dt = getDateAndTime();
     String d = dt.substring(0, 11);
     String t = dt.substring(12);
-    dataString = d + "," + t + "," + under + ",";
+    dataString = d + "," + t + "," + data + ",";
 }
 
-void watchForTemperatureResults(){
-  for (int i = 0; i < 3; i++) {
-    for (int i = 0; i < 200; i++) {
-      under = mySerial.readStringUntil((char)00);
-      if (under.length() > 0) {
-        break;
-      }
-    }
-    if (under.length() > 0) {
-      break;
-    }
-    else {
-      Serial.println("Didn't receive temp, trying again");
-      mySerial.print('t');
-    }
+String watchForTemperatureResults(){
+  String results;
+  while (results.length() <= 0){
+    results = BelowWaterSerial.readStringUntil((char)00);
   }
-  if (under.length() < 1) {
-    Serial.println("Error: did not receive temperature. Check sensor.");
-  }
+  return results;
 }
 
 void askForTemperature(){
     Serial.flush();
-    mySerial.print('t');
-    mySerial.print(numReadings);
-    mySerial.print('z');
+    BelowWaterSerial.print('t');
+    BelowWaterSerial.print(numReadings);
+    BelowWaterSerial.print('z');
     delay(500);
 }
 
@@ -127,6 +104,8 @@ String getDateAndTime() {
   fileName += "_";
   fileName += now.year();
   fileName += ".txt";
-  String datetime = now.toString(buf, len);
+  const int length = 32;
+  static char buffer[length];
+  String datetime = now.toString(buffer, length);
   return datetime;
 }

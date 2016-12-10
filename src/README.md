@@ -15,6 +15,6 @@ This code allows for the under-water temperature to be retrieved and sent to the
 
 Receives data from the Serial port and inserts the data into a JSON String. This string is then sent to a WiFi client.
 
-`data/_config.txt`
+`_config.txt`
 
 Header and metadata used for formatting and reporting data entries.

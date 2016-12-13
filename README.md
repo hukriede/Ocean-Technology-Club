@@ -29,7 +29,8 @@ monitor for harmful algae.
 git clone https://github.com/MoteMarine/Ocean-Technology-Club.git
 ```
 
-Follow the instructions found in the `docs` directory.
+A .pdf version of the instructions can be found in the `docs` directory. 
+You can also find all of the necessary information available online in this repo's wiki.
 
 ## Usage
 

@@ -26,7 +26,7 @@ void setup() {
    server and delay the set amount of time.
    */
 
-   if (connectToHost()) {
+   if (connectedToHost()) {
      String rawData = askForData();
      String data[10];
      splitCSV(rawData, data);
@@ -106,16 +106,19 @@ void setup() {
    Sensor.add(sensors);
 
    char json[350];
-   root.prettyPrintTo(json, sizeof(json));
+   root.printTo(json, sizeof(json));
+   root.prettyPrintTo(Serial);
    String jsonString = json;
    jsonString.replace("[","");
    jsonString.replace("]","");
    return jsonString;
  }
 
- boolean connectToHost() {
-   const uint16_t port = 4001;
+ boolean connectedToHost() {
+   // Attempts to make a connection with the server we'll send our data
+
    const char * host = "clouddev.mote.org";
+   const uint16_t port = 4001;
    while (!Client.connect(host, port)) {
      delay(5000);
      Serial.print(".");
@@ -124,6 +127,8 @@ void setup() {
  }
 
  void sendToClient(String data) {
+   // Sends the data we constructed to the server
+
    Serial.println(data);
    Client.print(data);
  }

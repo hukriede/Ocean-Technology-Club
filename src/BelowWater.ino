@@ -7,7 +7,8 @@ void setup() {
   Serial.begin(9600);
   pinMode(13, OUTPUT);
   pinMode(10, OUTPUT);
-  ledOff();
+  pinMode(10, LOW);
+
 
   while (!temperatureSensor.begin()) {
     Serial.println("Couldn't find MCP9808!");
@@ -50,11 +51,10 @@ double averageValues(int numberOfReadings){
 
   double sum = 0;
   for(int readingIndex = 0; readingIndex < numberOfReadings; readingIndex++){
-    ledOn();
     double reading = readTemperature();
     sum = (sum + reading);
     readingIndex = reading == 0.00 ? readingIndex-- : readingIndex;
-    ledOff();
+    BlinkLed();
   }
   double average = sum / numberOfReadings;
   delay(15);
@@ -62,23 +62,25 @@ double averageValues(int numberOfReadings){
 }
 
 double readTemperature() {
+  // Wakes up the sensor, takes a measurement in C*, and puts it back to sleep.
+
   temperatureSensor.shutdown_wake(0);
   double temperature = temperatureSensor.readTempC();
   temperatureSensor.shutdown_wake(1);
-  Serial.print(c * 9.0 / 5.0 + 32);
-  Serial.print("*F\n");
   return temperature;
 }
 
 void reportMeasuredTemperature(double temperature){
+  // Sends the averaged temperature to the AboveWater Arduino
+
   Serial.print(temperature);
   Serial.print((char)00);
 }
 
-void ledOn() {
-  digitalWrite(10, HIGH);
-}
+void BlinkLed() {
+  // Blinks the green LED on the sensor enclosure
 
-void ledOff() {
+  digitalWrite(10, HIGH);
+  delay(25);
   digitalWrite(10, LOW);
 }

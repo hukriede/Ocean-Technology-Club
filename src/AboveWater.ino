@@ -7,13 +7,6 @@
 #define SD_PIN 10
 SoftwareSerial BelowWaterSerial = SoftwareSerial(2, 3);
 
-struct configs {
-  int number;
-  String values;
-  String file;
-  String date;
-  String time;
-};
 
 void setup() {
   Serial.begin(115200);
@@ -24,6 +17,14 @@ void setup() {
     Serial.println("Card failed, or not present");
   }
 }
+
+struct configs {
+  int number;
+  String values;
+  String file;
+  String date;
+  String time;
+};
 
 void loop() {
   /* Asks the BelowWater Arduino for the temperature when prompted.
@@ -47,6 +48,13 @@ void loop() {
 }
 
 struct configs setConfigVariables(){
+  /* Creates a new configuration object to hold all necessary information
+
+  First we open the _config.txt file on the SD card. The number of readings
+  we want the BelowWater Arduino to average is collected. Then we store the
+  line of CSV configuration data from the file.
+  */
+
   struct configs currentConfigs;
   File configFile = SD.open("_config.txt");
   if (configFile) {
@@ -65,6 +73,8 @@ struct configs setConfigVariables(){
 }
 
 void askForTemperature(int numberOfReadings){
+  // Send the message to the BelowWater Arduino asking for the temperature
+
   Serial.flush();
   BelowWaterSerial.print('t');
   BelowWaterSerial.print(numberOfReadings);
@@ -73,6 +83,8 @@ void askForTemperature(int numberOfReadings){
 }
 
 String watchForTemperatureResults(){
+  // Look for results over serial waiting for the character indicating EOM
+
   String results;
   while (results.length() <= 0){
     results = BelowWaterSerial.readStringUntil((char)00);
@@ -81,6 +93,11 @@ String watchForTemperatureResults(){
 }
 
 String createDataString(String data, struct configs* configuration){
+  /* Creates the latter portion of the string to be sent to the Huzzah
+
+  We gather the current time, and construct a CSV string that is appended to
+  the configuration, which includes date, time, and temperature.
+  */
   getDateAndTime(configuration);
   String dataString = configuration->date + "," + configuration->time + "," + data + ",";
   return dataString;
@@ -107,12 +124,20 @@ void getDateAndTime(struct configs* configuration) {
 }
 
 void sendDataToClient(String data, String configVariables){
+  // Sends the generated CSV line to the Huzzah
+
   Serial.print(configVariables);
   Serial.print(data);
   Serial.print('z');
 }
 
 void writeDataToDisk(String fileName, String dataString){
+  /* Opens the appropriate file on the SD card and writes the temperature
+
+  Using the file name we generated in the getDateAndTime function we simply
+  try to open it and write a line of data if we were successful. A new file
+  is used each month.
+  */
   File dataFile = SD.open(fileName, FILE_WRITE);
   if (dataFile) {
     dataFile.println(dataString);

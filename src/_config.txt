@@ -1,3 +1,0 @@
-5,1,1,Phillippi Creek,27.272,-82.534,1,
-
-number of readings,model number,serial number,location,latitude,longitude,time between samplings(min)

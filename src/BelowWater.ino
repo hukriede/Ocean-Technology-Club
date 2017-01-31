@@ -6,8 +6,7 @@ Adafruit_MCP9808 temperatureSensor = Adafruit_MCP9808();
 void setup() {
   Serial.begin(9600);
   pinMode(13, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(10, LOW);
+  pinMode(13, LOW);
 
 
   while (!temperatureSensor.begin()) {
@@ -80,7 +79,7 @@ void reportMeasuredTemperature(double temperature){
 void BlinkLed() {
   // Blinks the green LED on the sensor enclosure
 
-  digitalWrite(10, HIGH);
+  digitalWrite(13, HIGH);
   delay(25);
-  digitalWrite(10, LOW);
+  digitalWrite(13, LOW);
 }

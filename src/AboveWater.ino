@@ -37,7 +37,8 @@ void loop() {
   to the SD card, and sends the gathered data (including the new temperature) to the Huzzah.
   */
 
-  if ((char)Serial.read() == 'd') {
+  if (Serial.read() == 'd') {
+    Serial.println("hello");
     struct configs configuration = setConfigVariables();
     askForTemperature(configuration.number);
     String temperature = watchForTemperatureResults();

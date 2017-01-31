@@ -6,38 +6,6 @@ ESP8266WiFiMulti WiFiMulti;
 SoftwareSerial AboveWaterSerial(12, 14);
 WiFiClient Client;
 
-void setup() {
-  Serial.begin(115200);
-  AboveWaterSerial.begin(115200);
-  WiFiMulti.addAP("Verizon-791L-00CC", "78d8b2d1");
-  while (WiFiMulti.run() != WL_CONNECTED) {
-     Serial.print(".");
-     delay(500);
-   }
-   Serial.println("WiFi Connected");
- }
-
- void loop() {
-   /* Gathers the temperature and metadata and sends it to the server.
-
-   We ask the AboveWater Arduino for data, which ultimately results in a CSV
-   message being sent over serial. That string is separated into an array, which
-   is used to create a JSON object. Once constructed we send that JSON to the
-   server and delay the set amount of time.
-   */
-
-   if (connectedToHost()) {
-     String rawData = askForData();
-     String data[10];
-     splitCSV(rawData, data);
-     String json = buildJSON(data);
-     sendToClient(json);
-     Client.stop();
-     float time = data[5].toFloat() * 60 * 1000;
-     delay(time);
-     }
- }
-
  String askForData() {
    /* Grabs the temperature and configuration values from the other chips
 
@@ -131,4 +99,36 @@ void setup() {
 
    Serial.println(data);
    Client.print(data);
+ }
+
+void setup() {
+  Serial.begin(115200);
+  AboveWaterSerial.begin(115200);
+  WiFiMulti.addAP("Verizon-791L-00CC", "78d8b2d1");
+  while (WiFiMulti.run() != WL_CONNECTED) {
+     Serial.print(".");
+     delay(500);
+   }
+   Serial.println("WiFi Connected");
+ }
+
+ void loop() {
+   /* Gathers the temperature and metadata and sends it to the server.
+
+   We ask the AboveWater Arduino for data, which ultimately results in a CSV
+   message being sent over serial. That string is separated into an array, which
+   is used to create a JSON object. Once constructed we send that JSON to the
+   server and delay the set amount of time.
+   */
+
+   if (connectedToHost()) {
+     String rawData = askForData();
+     String data[10];
+     splitCSV(rawData, data);
+     String json = buildJSON(data);
+     sendToClient(json);
+     Client.stop();
+     float time = data[5].toFloat() * 60 * 1000;
+     delay(time);
+     }
  }

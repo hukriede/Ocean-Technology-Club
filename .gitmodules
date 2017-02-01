@@ -4,3 +4,6 @@
 [submodule "src/AboveWater"]
 	path = src/AboveWater
 	url = https://github.com/MoteMarine/Above-Water.git
+[submodule "src/Communicator"]
+	path = src/Communicator
+	url = https://github.com/MoteMarine/Communicator.git

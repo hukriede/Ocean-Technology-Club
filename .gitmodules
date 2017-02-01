@@ -1,0 +1,6 @@
+[submodule "src/BelowWater"]
+	path = src/BelowWater
+	url = https://github.com/MoteMarine/Below-Water.git
+[submodule "src/AboveWater"]
+	path = src/AboveWater
+	url = https://github.com/MoteMarine/Above-Water.git

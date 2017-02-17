@@ -38,7 +38,6 @@ void loop() {
   */
 
   if (Serial.read() == 'd') {
-    Serial.println("hello");
     struct configs configuration = setConfigVariables();
     askForTemperature(configuration.number);
     String temperature = watchForTemperatureResults();

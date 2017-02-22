@@ -1,9 +1,9 @@
-[submodule "repositories//BelowWater"]
+[submodule "repositories/BelowWater"]
 	path = repositories/BelowWater
 	url = https://github.com/MoteMarine/Below-Water.git
-[submodule "repositories//AboveWater"]
-	path = repositories//AboveWater
+[submodule "repositories/AboveWater"]
+	path = repositories/AboveWater
 	url = https://github.com/MoteMarine/Above-Water.git
-[submodule "repositories//Communicator"]
-	path = repositories//Communicator
+[submodule "repositories/Communicator"]
+	path = repositories/Communicator
 	url = https://github.com/MoteMarine/Communicator.git

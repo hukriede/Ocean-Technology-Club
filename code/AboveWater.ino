@@ -18,12 +18,12 @@ struct configs {
 };
 
 
-struct configs setConfigVariables(){
+struct configs setConfigVariables() {
   /* Creates a new configuration object to hold all necessary information
 
-  First we open the _config.txt file on the SD card. The number of readings
-  we want the BelowWater Arduino to average is collected. Then we store the
-  line of CSV configuration data from the file.
+    First we open the _config.txt file on the SD card. The number of readings
+    we want the BelowWater Arduino to average is collected. Then we store the
+    line of CSV configuration data from the file.
   */
 
   struct configs currentConfigs;
@@ -43,7 +43,7 @@ struct configs setConfigVariables(){
   return currentConfigs;
 }
 
-void askForTemperature(int numberOfReadings){
+void askForTemperature(int numberOfReadings) {
   // Send the message to the BelowWater Arduino asking for the temperature
 
   Serial.flush();
@@ -53,21 +53,21 @@ void askForTemperature(int numberOfReadings){
   delay(500);
 }
 
-String watchForTemperatureResults(){
+String watchForTemperatureResults() {
   // Look for results over serial waiting for the character indicating EOM
 
   String results;
-  while (results.length() <= 0){
+  while (results.length() <= 0) {
     results = BelowWaterSerial.readStringUntil((char)00);
   }
   return results;
 }
 
-String createDataString(String data, struct configs* configuration){
+String createDataString(String data, struct configs* configuration) {
   /* Creates the latter portion of the string to be sent to the Huzzah
 
-  We gather the current time, and construct a CSV string that is appended to
-  the configuration, which includes date, time, and temperature.
+    We gather the current time, and construct a CSV string that is appended to
+    the configuration, which includes date, time, and temperature.
   */
   getDateAndTime(configuration);
   String dataString = configuration->date + "," + configuration->time + "," + data + ",";
@@ -77,12 +77,12 @@ String createDataString(String data, struct configs* configuration){
 void getDateAndTime(struct configs* configuration) {
   /* Gets the current datetime from the DeadOn and formats it appropriately
 
-  This function is passed a reference to our configuration object. We start by updating
-  the RTC's registers so that they reflect the proper time. Then we create a file name
-  and two representative strings for later use.
+    This function is passed a reference to our configuration object. We start by updating
+    the RTC's registers so that they reflect the proper time. Then we create a file name
+    and two representative strings for later use.
 
-  Setting the time on the DeadOn is required prior if we want the returned string to
-  represent the correct values.
+    Setting the time on the DeadOn is required prior if we want the returned string to
+    represent the correct values.
   */
 
   rtc.update();
@@ -94,7 +94,7 @@ void getDateAndTime(struct configs* configuration) {
   configuration->time = time;
 }
 
-void sendDataToClient(String data, String configVariables){
+void sendDataToClient(String data, String configVariables) {
   // Sends the generated CSV line to the Huzzah
 
   Serial.print(configVariables);
@@ -102,12 +102,12 @@ void sendDataToClient(String data, String configVariables){
   Serial.print('z');
 }
 
-void writeDataToDisk(String fileName, String dataString){
+void writeDataToDisk(String fileName, String dataString) {
   /* Opens the appropriate file on the SD card and writes the temperature
 
-  Using the file name we generated in the getDateAndTime function we simply
-  try to open it and write a line of data if we were successful. A new file
-  is used each month.
+    Using the file name we generated in the getDateAndTime function we simply
+    try to open it and write a line of data if we were successful. A new file
+    is used each month.
   */
   File dataFile = SD.open(fileName, FILE_WRITE);
   if (dataFile) {
@@ -131,17 +131,17 @@ void setup() {
 void loop() {
   /* Asks the BelowWater Arduino for the temperature when prompted.
 
-  The AboveWater Arduino continuously waits for serial input from the Huzzah ESP8266.
-  If it sees the character 'd' it gathers configuration variables from the SD card and
-  asks the BelowWater Arduino for the temperature.
+    The AboveWater Arduino continuously waits for serial input from the Huzzah ESP8266.
+    If it sees the character 'd' it gathers configuration variables from the SD card and
+    asks the BelowWater Arduino for the temperature.
 
-  Then it gets the date and time from the DeadOn RTC, writes the current temperature value
-  to the SD card, and sends the gathered data (including the new temperature) to the Huzzah.
+    Then it gets the date and time from the DeadOn RTC, writes the current temperature value
+    to the SD card, and sends the gathered data (including the new temperature) to the Huzzah.
   */
-if(!Serial.available()){
-   delay(1000);
- }
- else{
+  while (!Serial.available()) {
+    delay(1000);
+  }
+
   if ((char)Serial.read() == 'd') {
     struct configs configuration = setConfigVariables();
     askForTemperature(configuration.number);
@@ -149,7 +149,6 @@ if(!Serial.available()){
     String data = createDataString(temperature, &configuration);
     writeDataToDisk(configuration.file, data);
     sendDataToClient(data, configuration.values);
-    }
   }
-}
 
+}

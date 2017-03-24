@@ -8,15 +8,6 @@
 SoftwareSerial BelowWaterSerial = SoftwareSerial(2, 3);
 
 
-void setup() {
-  Serial.begin(115200);
-  BelowWaterSerial.begin(9600);
-  SPI.begin();
-  rtc.begin(RTC_PIN);
-  while (!SD.begin(SD_PIN)) {
-    Serial.println("Card failed, or not present");
-  }
-}
 
 struct configs {
   int number;
@@ -26,26 +17,6 @@ struct configs {
   String time;
 };
 
-void loop() {
-  /* Asks the BelowWater Arduino for the temperature when prompted.
-
-  The AboveWater Arduino continuously waits for serial input from the Huzzah ESP8266.
-  If it sees the character 'd' it gathers configuration variables from the SD card and
-  asks the BelowWater Arduino for the temperature.
-
-  Then it gets the date and time from the DeadOn RTC, writes the current temperature value
-  to the SD card, and sends the gathered data (including the new temperature) to the Huzzah.
-  */
-
-  if (Serial.read() == 'd') {
-    struct configs configuration = setConfigVariables();
-    askForTemperature(configuration.number);
-    String temperature = watchForTemperatureResults();
-    String data = createDataString(temperature, &configuration);
-    writeDataToDisk(configuration.file, data);
-    sendDataToClient(data, configuration.values);
-  }
-}
 
 struct configs setConfigVariables(){
   /* Creates a new configuration object to hold all necessary information
@@ -146,3 +117,39 @@ void writeDataToDisk(String fileName, String dataString){
     Serial.print("error opening " + fileName);
   }
 }
+
+void setup() {
+  Serial.begin(115200);
+  BelowWaterSerial.begin(9600);
+  SPI.begin();
+  rtc.begin(RTC_PIN);
+  while (!SD.begin(SD_PIN)) {
+    Serial.println("Card failed, or not present");
+  }
+}
+
+void loop() {
+  /* Asks the BelowWater Arduino for the temperature when prompted.
+
+  The AboveWater Arduino continuously waits for serial input from the Huzzah ESP8266.
+  If it sees the character 'd' it gathers configuration variables from the SD card and
+  asks the BelowWater Arduino for the temperature.
+
+  Then it gets the date and time from the DeadOn RTC, writes the current temperature value
+  to the SD card, and sends the gathered data (including the new temperature) to the Huzzah.
+  */
+if(!Serial.available()){
+   delay(1000);
+ }
+ else{
+  if ((char)Serial.read() == 'd') {
+    struct configs configuration = setConfigVariables();
+    askForTemperature(configuration.number);
+    String temperature = watchForTemperatureResults();
+    String data = createDataString(temperature, &configuration);
+    writeDataToDisk(configuration.file, data);
+    sendDataToClient(data, configuration.values);
+    }
+  }
+}
+

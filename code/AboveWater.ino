@@ -7,8 +7,6 @@
 #define SD_PIN 10
 SoftwareSerial BelowWaterSerial = SoftwareSerial(2, 3);
 
-
-
 struct configs {
   int number;
   String values;
@@ -16,7 +14,6 @@ struct configs {
   String date;
   String time;
 };
-
 
 struct configs setConfigVariables() {
   /* Creates a new configuration object to hold all necessary information
@@ -150,5 +147,4 @@ void loop() {
     writeDataToDisk(configuration.file, data);
     sendDataToClient(data, configuration.values);
   }
-
 }
